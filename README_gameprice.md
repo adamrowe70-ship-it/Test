@@ -10,12 +10,19 @@ yourself.
 
 ## 📱 Open it on your phone
 
-Once GitHub Pages has finished its first deploy, the app lives at:
+**One-time setup** (turns on free GitHub Pages hosting):
 
-**https://adamrowe70-ship-it.github.io/Test/**
+1. Go to **https://github.com/adamrowe70-ship-it/Test/settings/pages**
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Set **Branch** to `claude/game-price-scraper-k1c9l4` and the folder to
+   **`/docs`**, then tap **Save**.
+4. Wait ~1 minute. Your app is then live at:
 
-Just tap that link — search a game, pick the match, tap **Buy →**. Add it to
-your home screen for an app-like icon.
+   **https://adamrowe70-ship-it.github.io/Test/**
+
+Tap that link any time — search a game, pick the match, tap **Buy →**. Add it
+to your home screen for an app-like icon. It auto-updates whenever the `docs/`
+folder changes on that branch.
 
 ## How it works
 
@@ -30,9 +37,8 @@ docs/index.html  ──►  CheapShark /games?title=…   (search)
 Buy link  ──►  CheapShark /redirect?dealID=…  ──►  the actual store page
 ```
 
-Deployment is automatic: the GitHub Actions workflow in
-`.github/workflows/deploy-pages.yml` publishes `docs/` to GitHub Pages on every
-push to the `claude/game-price-scraper-k1c9l4` branch.
+Once GitHub Pages is pointed at the `/docs` folder (see setup above), it
+re-publishes automatically whenever that folder changes — no build step needed.
 
 ## Run it locally (optional)
 

@@ -8,7 +8,6 @@
   :root {
     --bg: #0f1115;
     --panel: #181b22;
-    --panel-2: #1f2330;
     --text: #e8eaf0;
     --muted: #9aa3b2;
     --accent: #5b8cff;
@@ -22,17 +21,18 @@
     background: radial-gradient(1200px 600px at 50% -10%, #1a2030, var(--bg));
     color: var(--text);
     min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
   }
-  header { text-align: center; padding: 48px 16px 24px; }
-  h1 { margin: 0; font-size: 2rem; letter-spacing: -0.02em; }
+  header { text-align: center; padding: 40px 16px 16px; }
+  h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.02em; }
   h1 span { color: var(--accent); }
   .sub { color: var(--muted); margin-top: 8px; font-size: 0.95rem; }
-  .wrap { max-width: 820px; margin: 0 auto; padding: 0 16px 64px; }
-  form { display: flex; gap: 8px; margin: 24px auto 8px; max-width: 560px; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 14px 64px; }
+  form { display: flex; gap: 8px; margin: 22px auto 8px; max-width: 560px; }
   input[type=search] {
-    flex: 1; padding: 14px 16px; font-size: 1rem; border-radius: 12px;
+    flex: 1; padding: 14px 16px; font-size: 16px; border-radius: 12px;
     border: 1px solid var(--border); background: var(--panel); color: var(--text);
-    outline: none;
+    outline: none; min-width: 0;
   }
   input[type=search]:focus { border-color: var(--accent); }
   button {
@@ -43,35 +43,35 @@
   .status { text-align: center; color: var(--muted); min-height: 22px; margin: 8px 0; }
   .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-    padding: 14px; margin: 12px 0; display: flex; gap: 14px; align-items: center;
+    padding: 12px; margin: 12px 0; display: flex; gap: 12px; align-items: center;
     cursor: pointer; transition: border-color .15s, transform .05s;
   }
   .card:hover { border-color: var(--accent); }
   .card:active { transform: scale(0.997); }
-  .card img { width: 92px; height: 35px; object-fit: cover; border-radius: 6px; background: #000; flex: 0 0 auto; }
-  .card .name { font-weight: 600; }
-  .card .meta { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+  .card img { width: 84px; height: 32px; object-fit: cover; border-radius: 6px; background: #000; flex: 0 0 auto; }
+  .card .name { font-weight: 600; line-height: 1.2; }
+  .card .meta { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
   .card .from { margin-left: auto; text-align: right; flex: 0 0 auto; }
-  .card .from .label { color: var(--muted); font-size: 0.75rem; }
-  .card .from .price { color: var(--good); font-weight: 700; font-size: 1.15rem; }
-  .deals { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 16px; }
-  .deals .head { padding: 16px; display: flex; gap: 14px; align-items: center; border-bottom: 1px solid var(--border); }
-  .deals .head img { width: 120px; height: 45px; object-fit: cover; border-radius: 6px; background:#000; }
-  .deals .head .t { font-weight: 700; font-size: 1.1rem; }
-  .deals .head .lowest { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+  .card .from .label { color: var(--muted); font-size: 0.72rem; }
+  .card .from .price { color: var(--good); font-weight: 700; font-size: 1.1rem; }
+  .deals { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 14px; }
+  .deals .head { padding: 14px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+  .deals .head img { width: 110px; height: 42px; object-fit: cover; border-radius: 6px; background:#000; flex:0 0 auto; }
+  .deals .head .t { font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
+  .deals .head .lowest { color: var(--muted); font-size: 0.82rem; margin-top: 3px; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
   tr:last-child td { border-bottom: none; }
   .price { color: var(--good); font-weight: 700; }
-  .was { color: var(--muted); text-decoration: line-through; font-size: 0.85rem; margin-left: 6px; }
-  .save { color: var(--good); font-size: 0.8rem; }
+  .was { color: var(--muted); text-decoration: line-through; font-size: 0.82rem; margin-left: 6px; }
+  .save { color: var(--good); font-size: 0.78rem; }
   .best td { background: rgba(58,210,159,0.06); }
-  .badge { display: inline-block; background: var(--good); color:#06210f; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:middle; }
-  a.buy { background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 9px; text-decoration: none; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+  .badge { display: inline-block; background: var(--good); color:#06210f; font-size:0.62rem; font-weight:700; padding:2px 7px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+  a.buy { background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 9px; text-decoration: none; font-weight: 600; font-size: 0.88rem; white-space: nowrap; }
   a.buy:hover { filter: brightness(1.1); }
   .back { background: none; color: var(--muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; cursor: pointer; margin-bottom: 4px; }
-  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.78rem; padding: 24px 14px; }
   footer a { color: var(--muted); }
 </style>
 </head>
@@ -82,7 +82,7 @@
   </header>
   <div class="wrap">
     <form id="searchForm">
-      <input id="q" type="search" placeholder="e.g. Elden Ring, Hades, Cyberpunk 2077…" autocomplete="off" autofocus />
+      <input id="q" type="search" placeholder="e.g. Elden Ring, Hades, Cyberpunk 2077…" autocomplete="off" autocapitalize="off" autofocus />
       <button id="goBtn" type="submit">Search</button>
     </form>
     <div class="status" id="status"></div>
@@ -95,33 +95,52 @@
   </footer>
 
 <script>
+// ---- This page talks directly to the free CheapShark API from your browser. ----
+// No backend/server needed, which is why it can live on GitHub Pages and open
+// on any phone. CheapShark sends `Access-Control-Allow-Origin: *`, so browser
+// requests are allowed.
+const API = "https://www.cheapshark.com/api/1.0";
+
 const $ = (id) => document.getElementById(id);
 const statusEl = $("status");
 const resultsEl = $("results");
 const dealsEl = $("dealsView");
 
+let storeMap = null;     // { storeID: storeName }, fetched once and reused
+let lastQuery = "";
+
 function setStatus(msg) { statusEl.textContent = msg || ""; }
 function money(v) { return v == null ? "—" : "$" + Number(v).toFixed(2); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function getStores() {
+  if (storeMap) return storeMap;
+  const res = await fetch(API + "/stores");
+  const list = await res.json();
+  storeMap = {};
+  for (const s of list) storeMap[s.storeID] = s.storeName;
+  return storeMap;
+}
 
 async function searchGames(title) {
   resultsEl.innerHTML = "";
   dealsEl.innerHTML = "";
   setStatus("Searching…");
   try {
-    const res = await fetch("/api/search?title=" + encodeURIComponent(title));
-    const data = await res.json();
-    if (data.error) { setStatus("Error: " + data.error); return; }
-    const games = data.results || [];
+    const res = await fetch(API + "/games?title=" + encodeURIComponent(title) + "&limit=20");
+    const games = await res.json();
     if (!games.length) { setStatus('No games found for “' + title + '”.'); return; }
-    setStatus(games.length + " match" + (games.length === 1 ? "" : "es") + " — pick one to see all store prices.");
+    setStatus(games.length + " match" + (games.length === 1 ? "" : "es") + " — tap one to see all store prices.");
     for (const g of games) {
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
         <img src="${g.thumb || ''}" alt="" onerror="this.style.visibility='hidden'">
         <div>
-          <div class="name">${escapeHtml(g.name || 'Unknown')}</div>
-          <div class="meta">Click to compare prices across all stores</div>
+          <div class="name">${escapeHtml(g.external || 'Unknown')}</div>
+          <div class="meta">Tap to compare prices across all stores</div>
         </div>
         <div class="from">
           <div class="label">from</div>
@@ -131,7 +150,7 @@ async function searchGames(title) {
       resultsEl.appendChild(card);
     }
   } catch (e) {
-    setStatus("Something went wrong: " + e.message);
+    setStatus("Couldn't reach the price service: " + e.message);
   }
 }
 
@@ -140,11 +159,27 @@ async function showDeals(gameID) {
   dealsEl.innerHTML = "";
   setStatus("Loading deals…");
   try {
-    const res = await fetch("/api/deals?id=" + encodeURIComponent(gameID));
+    const [stores, res] = await Promise.all([
+      getStores(),
+      fetch(API + "/games?id=" + encodeURIComponent(gameID)),
+    ]);
     const data = await res.json();
-    if (data.error) { setStatus("Error: " + data.error); return; }
+    const info = data.info || {};
+    const deals = (data.deals || []).map(d => ({
+      store: stores[d.storeID] || ("Store " + d.storeID),
+      price: d.price,
+      retailPrice: d.retailPrice,
+      savings: Math.round(Number(d.savings || 0)),
+      buyURL: "https://www.cheapshark.com/redirect?dealID=" + encodeURIComponent(d.dealID),
+    }));
+    deals.sort((a, b) => Number(a.price) - Number(b.price));
     setStatus("");
-    renderDeals(data);
+    renderDeals({
+      title: info.title,
+      thumb: info.thumb,
+      cheapestPriceEver: (data.cheapestPriceEver || {}).price,
+      deals,
+    });
   } catch (e) {
     setStatus("Something went wrong: " + e.message);
   }
@@ -179,14 +214,9 @@ function renderDeals(data) {
     </div>`;
 }
 
-let lastQuery = "";
 function backToResults() {
   dealsEl.innerHTML = "";
   if (lastQuery) searchGames(lastQuery);
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 $("searchForm").addEventListener("submit", (e) => {

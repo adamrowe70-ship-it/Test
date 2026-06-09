@@ -1,58 +1,53 @@
 # GamePrice 🎮💰
 
 Type the name of a PC game and instantly see the **cheapest place to buy it**,
-with a direct purchase link.
+with a direct purchase link. Works on your phone — it's just a web page.
 
-It's a tiny, **zero-dependency** web app (pure Python standard library + a single
-HTML page). Prices come from the free [CheapShark](https://www.cheapshark.com/api/)
-deals API, which aggregates live prices across **~30 stores** — Steam, GOG,
-Humble, Fanatical, GreenManGaming, Epic, Fanatical, and more — so you don't have
-to scrape each store yourself.
+Prices come from the free [CheapShark](https://www.cheapshark.com/api/) deals
+API, which tracks live prices across **~30 stores** — Steam, GOG, Humble,
+Fanatical, GreenManGaming, Epic and more — so you don't have to check each store
+yourself.
 
-## Run it
+## 📱 Open it on your phone
 
-```bash
-python3 app.py
-```
+Once GitHub Pages has finished its first deploy, the app lives at:
 
-Then open **http://localhost:8000** in your browser.
+**https://adamrowe70-ship-it.github.io/Test/**
 
-That's it — no `pip install` required (it only uses the Python standard library).
-
-Optional environment variables:
-
-| Variable | Default     | Meaning                     |
-|----------|-------------|-----------------------------|
-| `HOST`   | `127.0.0.1` | Address to bind             |
-| `PORT`   | `8000`      | Port to listen on           |
-
-## How to use
-
-1. Type a game name (e.g. *Elden Ring*) and hit **Search**.
-2. Pick the matching game from the list.
-3. See every current offer sorted cheapest-first, with the discount and an
-   **all-time-low** price for reference.
-4. Click **Buy →** to go straight to the store's page for that deal.
+Just tap that link — search a game, pick the match, tap **Buy →**. Add it to
+your home screen for an app-like icon.
 
 ## How it works
 
+It's a single static page (`docs/index.html`) with no backend. Your browser
+calls the CheapShark API directly (it allows cross-origin requests), so the page
+can be hosted for free on GitHub Pages and opened on any device.
+
 ```
-Browser  ──/api/search──►  app.py  ──►  CheapShark /games?title=
-         ──/api/deals───►          ──►  CheapShark /games?id=
-                                   ──►  CheapShark /stores  (cached 1h)
+docs/index.html  ──►  CheapShark /games?title=…   (search)
+                 ──►  CheapShark /games?id=…       (all store offers)
+                 ──►  CheapShark /stores           (store names)
+Buy link  ──►  CheapShark /redirect?dealID=…  ──►  the actual store page
 ```
 
-- `app.py` is a small `http.server` backend that proxies and normalises the
-  CheapShark API, joins store IDs to store names, and sorts deals by price.
-- `static/index.html` is the single-page frontend (search box → results →
-  price comparison table).
-- Buy links use CheapShark's `redirect?dealID=…` endpoint, which forwards the
-  buyer to the actual store page for that specific offer.
+Deployment is automatic: the GitHub Actions workflow in
+`.github/workflows/deploy-pages.yml` publishes `docs/` to GitHub Pages on every
+push to the `claude/game-price-scraper-k1c9l4` branch.
+
+## Run it locally (optional)
+
+You don't need this, but if you want to run it on your own computer:
+
+```bash
+python3 app.py          # then open http://localhost:8000
+```
+
+No `pip install` required — it only uses the Python standard library.
 
 ## Notes & limitations
 
 - Prices are shown in **USD** (CheapShark is USD-based).
-- Only stores CheapShark tracks are included. A game with no current deals will
-  show no offers.
-- This app reads public pricing data only; it doesn't handle purchases — the
-  Buy link hands you off to the store to check out there.
+- Only stores CheapShark tracks are included; a game with no current deals shows
+  no offers.
+- The app reads public pricing data only — the **Buy** link hands you off to the
+  store to check out there.

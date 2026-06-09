@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Philosophy</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --fg: #ececec;
+    --muted: #6a6a72;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 8vh 6vw;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #question {
+    font-size: clamp(1.8rem, 5vw, 3.4rem);
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    max-width: 22ch;
+    text-wrap: balance;
+    transition: opacity 0.45s ease;
+  }
+
+  #new {
+    margin-top: 7vh;
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.7em 1.6em;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+
+  #new:hover, #new:focus-visible {
+    color: var(--fg);
+    border-color: var(--fg);
+    outline: none;
+  }
+</style>
+</head>
+<body>
+  <main>
+    <p id="question"></p>
+    <button id="new" type="button">New question</button>
+  </main>
+
+<script>
+  const QUESTIONS = [
+    // Ethics
+    "If saving five lives requires sacrificing one, does the right choice depend on whether you act or merely allow it?",
+    "Can an action be wrong if it harms no one and no one ever knows it happened?",
+    "Do you have a greater moral duty to your own child than to a stranger's child who needs you more?",
+    "Is it ever right to punish an innocent person to prevent a much greater harm?",
+    "If a future generation can't object, what do we truly owe to people who do not yet exist?",
+    // Metaphysics
+    "Why is there something rather than nothing?",
+    "If everything that exists had a cause, what caused the first cause — and if nothing did, why not the universe itself?",
+    "Does time actually flow, or is the passing of moments only something minds invent?",
+    "Are numbers and mathematical truths discovered, or are they things we made up?",
+    "If the universe is infinite, does an exact copy of you exist somewhere, living a slightly different life?",
+    "Is the world made of things, or only of processes and relations with no 'things' underneath?",
+    // Identity
+    "If every atom in your body is replaced over time, in what sense are you the same person you were as a child?",
+    "If your mind were perfectly copied into a new body and the original destroyed, would the copy be you — or a stranger who thinks it is?",
+    "When you wake up tomorrow, what guarantees that the person who remembers being you actually is you?",
+    "If a ship is rebuilt plank by plank until nothing original remains, is it still the same ship?",
+    "Are you a single continuous self, or just a sequence of momentary selves that happen to share memories?",
+    // Consciousness
+    "Why is there something it is like to be you, rather than all of this happening in the dark?",
+    "Could another person see the colour red exactly as you see green, with neither of you ever able to tell?",
+    "If a machine behaved exactly like a conscious being in every way, how could you ever know whether it actually feels anything?",
+    "Is your sense of being a unified 'I' a real thing, or a story your brain tells after the fact?",
+    "Could you be the only conscious being that exists, with everyone else a convincing appearance?",
+    // Free will
+    "If every choice you make was set in motion by causes you didn't choose, in what sense is the choice yours?",
+    "Could you have done otherwise than you did — and if not, can you be truly responsible for anything?",
+    "If a perfect prediction of your next decision existed before you made it, were you ever really deciding?",
+    "Does it matter whether free will is real, if it feels exactly the same either way?",
+    // Meaning
+    "If the universe is indifferent and will eventually end, can anything you do matter in the end?",
+    "Would a life of constant, effortless pleasure be a good life, or a wasted one?",
+    "Is a meaningful life something you discover, something you create, or an illusion you need to function?",
+    "If you could live the exact same life over and over forever, would that make it more meaningful or less?",
+    "Is it better to have lived and suffered than never to have existed at all?",
+    "Would you choose a comforting illusion over a painful truth — and does the answer reveal what you really value?",
+    "If happiness came only from forgetting hard truths, would you still want it?",
+    "Does the value of your life depend on whether anyone remembers it after you're gone?"
+  ];
+
+  const STORAGE_KEY = "dailyPhilosophy.lastQuestion";
+  const el = document.getElementById("question");
+  const btn = document.getElementById("new");
+
+  function pickDifferent(current) {
+    if (QUESTIONS.length <= 1) return QUESTIONS[0];
+    let next;
+    do {
+      next = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+    } while (next === current);
+    return next;
+  }
+
+  function show(question) {
+    el.textContent = question;
+    try { localStorage.setItem(STORAGE_KEY, question); } catch (e) {}
+  }
+
+  function newQuestion() {
+    const current = el.textContent;
+    el.style.opacity = "0";
+    setTimeout(() => {
+      show(pickDifferent(current));
+      el.style.opacity = "1";
+    }, 450);
+  }
+
+  // On load: restore the last question if it's still a valid one, else pick fresh.
+  let initial;
+  try { initial = localStorage.getItem(STORAGE_KEY); } catch (e) { initial = null; }
+  if (!initial || !QUESTIONS.includes(initial)) {
+    initial = pickDifferent(null);
+  }
+  show(initial);
+
+  btn.addEventListener("click", newQuestion);
+</script>
+</body>
+</html>

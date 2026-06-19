@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frietjes — A One-Page Presentation</title>
+  <style>
+    :root {
+      --gold: #f4b400;
+      --deep: #8a4b08;
+      --cream: #fff8ec;
+      --ink: #2b1d0e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--cream), #ffe9c2);
+      color: var(--ink);
+      line-height: 1.5;
+      padding: 2rem 1rem;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(138, 75, 8, 0.18);
+      overflow: hidden;
+    }
+    header {
+      background: linear-gradient(120deg, var(--deep), var(--gold));
+      color: #fff;
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+    header .emoji { font-size: 3.5rem; }
+    header h1 { font-size: 2.6rem; letter-spacing: 1px; margin: 0.3rem 0; }
+    header p { font-size: 1.05rem; opacity: 0.95; }
+    .content { padding: 2rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+    .card {
+      background: var(--cream);
+      border-left: 5px solid var(--gold);
+      border-radius: 10px;
+      padding: 1.2rem 1.3rem;
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      color: var(--deep);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card ul { margin-left: 1.1rem; }
+    .card li { margin-bottom: 0.3rem; }
+    .card p { margin-bottom: 0.4rem; }
+    .full { grid-column: 1 / -1; }
+    .sauces {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      background: var(--gold);
+      color: var(--ink);
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    footer {
+      text-align: center;
+      padding: 1.2rem;
+      font-size: 0.85rem;
+      color: var(--deep);
+      background: var(--cream);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="emoji">🍟</div>
+      <h1>Frietjes</h1>
+      <p>The crispy, golden pride of Belgium</p>
+    </header>
+
+    <div class="content">
+      <div class="grid">
+        <div class="card">
+          <h2>📜 Origin</h2>
+          <p>Frietjes are deep-fried potato sticks claimed proudly by <strong>Belgium</strong>. Stories trace them to the Meuse Valley, where villagers fried potatoes when rivers froze and fish were scarce.</p>
+          <p>Today they are a cornerstone of Belgian food culture and a candidate for UNESCO recognition.</p>
+        </div>
+
+        <div class="card">
+          <h2>🥔 What Makes Them Special</h2>
+          <ul>
+            <li><strong>Fried twice</strong> — once low, once hot</li>
+            <li>Crispy outside, fluffy inside</li>
+            <li>Traditionally fried in beef fat (<em>blanc de bœuf</em>)</li>
+            <li>Cut thicker than French fries</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>🏠 The Frietkot</h2>
+          <p>Served from a <strong>frietkot</strong> or <strong>frituur</strong> — a beloved local fry shack found on nearly every Belgian street corner.</p>
+          <p>Packed in a paper cone or tray, eaten with a small fork.</p>
+        </div>
+
+        <div class="card full">
+          <h2>🥫 Classic Sauces</h2>
+          <p>Frietjes are rarely eaten plain. The sauce is half the experience:</p>
+          <div class="sauces">
+            <span class="tag">Mayonnaise</span>
+            <span class="tag">Andalouse</span>
+            <span class="tag">Samurai</span>
+            <span class="tag">Ketchup</span>
+            <span class="tag">Curry</span>
+            <span class="tag">Joppiesaus</span>
+            <span class="tag">Tartare</span>
+            <span class="tag">Pickles</span>
+          </div>
+        </div>
+
+        <div class="card full">
+          <h2>💡 Did You Know?</h2>
+          <p>The name "French fries" may come from WWI soldiers who tasted them in French-speaking Belgium — but Belgians insist the fry is <strong>theirs</strong>. A perfect portion is freshly fried, golden, and salted while still hot. <em>Smakelijk!</em></p>
+        </div>
+      </div>
+    </div>
+
+    <footer>Made with 🍟 &middot; A one-page intro to frietjes</footer>
+  </div>
+</body>
+</html>

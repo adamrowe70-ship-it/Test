@@ -113,7 +113,7 @@ private fun RpeInput(enabled: Boolean, onRate: (Int) -> Unit) {
 }
 
 @Composable
-private fun Settings(s: UiState, onSave: (RunnerProfile, IntervalPlan, Int) -> Unit) {
+private fun Settings(s: UiState, onSave: (RunnerProfile, IntervalPlan, Int, String) -> Unit) {
     // Keyed on the saved values so the fields refresh when the coach changes the plan.
     var age by remember(s.profile) { mutableStateOf(s.profile.age.toString()) }
     var maxHr by remember(s.profile) { mutableStateOf(s.profile.maxHr?.toString().orEmpty()) }
@@ -122,6 +122,7 @@ private fun Settings(s: UiState, onSave: (RunnerProfile, IntervalPlan, Int) -> U
     var reps by remember(s.plan) { mutableStateOf(s.plan.reps.toString()) }
     var warmup by remember(s.plan) { mutableStateOf((s.plan.warmupSec / 60).toString()) }
     var tolerance by remember(s.bpmTolerance) { mutableStateOf(s.bpmTolerance.toString()) }
+    var clientId by remember(s.spotifyClientId) { mutableStateOf(s.spotifyClientId) }
 
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -140,6 +141,13 @@ private fun Settings(s: UiState, onSave: (RunnerProfile, IntervalPlan, Int) -> U
                 NumberField("Warm-up/cool-down min", warmup, Modifier.weight(1f)) { warmup = it }
                 NumberField("BPM tolerance ±", tolerance, Modifier.weight(1f)) { tolerance = it }
             }
+            OutlinedTextField(
+                value = clientId,
+                onValueChange = { clientId = it },
+                label = { Text("Spotify Client ID") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Button(onClick = {
                 val profile = RunnerProfile(age.toIntOrNull() ?: s.profile.age, maxHr.toIntOrNull())
                 val wu = ((warmup.toIntOrNull() ?: 5) * 60).coerceAtLeast(0)
@@ -152,7 +160,7 @@ private fun Settings(s: UiState, onSave: (RunnerProfile, IntervalPlan, Int) -> U
                         cooldownSec = wu,
                     )
                 }.getOrDefault(s.plan)
-                onSave(profile, plan, (tolerance.toIntOrNull() ?: s.bpmTolerance).coerceIn(1, 15))
+                onSave(profile, plan, (tolerance.toIntOrNull() ?: s.bpmTolerance).coerceIn(1, 15), clientId)
             }) { Text("Save") }
         }
     }

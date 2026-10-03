@@ -25,7 +25,7 @@ import java.security.SecureRandom
  * and `POST /playlists/{id}/items`. Spotify no longer gives new apps song tempo, so
  * [TempoProvider] supplies the BPM.
  */
-class Spotify(private val store: Store, private val clientId: String) {
+class Spotify(private val store: Store, private val defaultClientId: String) {
     companion object {
         const val REDIRECT_URI = "runcoach://callback"
         private const val SCOPES =
@@ -33,10 +33,12 @@ class Spotify(private val store: Store, private val clientId: String) {
         private const val API = "https://api.spotify.com/v1"
     }
 
+    private val clientId: String get() = store.spotifyClientId.ifBlank { defaultClientId }
+
     val isConnected: Boolean get() = store.spotifyRefreshToken != null
 
     fun startLogin(context: Context) {
-        require(clientId.isNotBlank()) { "Set spotify.clientId in local.properties" }
+        require(clientId.isNotBlank()) { "Enter your Spotify Client ID in Settings first." }
         val verifier = randomString(64)
         store.pkceVerifier = verifier
         val challenge = Base64.encodeToString(

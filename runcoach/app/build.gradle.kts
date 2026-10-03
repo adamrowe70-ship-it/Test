@@ -21,9 +21,19 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1"
-        // Your app's Client ID from developer.spotify.com/dashboard, set in local.properties.
+        // Optional default Spotify Client ID from local.properties; it can also be entered in the app.
         buildConfigField("String", "SPOTIFY_CLIENT_ID", "\"${localProps.getProperty("spotify.clientId", "")}\"")
         manifestPlaceholders["redirectScheme"] = "runcoach"
+    }
+
+    // A fixed debug key (committed on purpose) so each new build installs over the last one.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildFeatures {

@@ -59,6 +59,11 @@ class Store(context: Context) {
         get() = prefs.getString("lastPlaylistUrl", null)
         set(v) = prefs.edit().putString("lastPlaylistUrl", v).apply()
 
+    /** From developer.spotify.com/dashboard. */
+    var spotifyClientId: String
+        get() = prefs.getString("sp.clientId", "")!!
+        set(v) = prefs.edit().putString("sp.clientId", v.trim()).apply()
+
     var spotifyAccessToken: String?
         get() = prefs.getString("sp.access", null)
         set(v) = prefs.edit().putString("sp.access", v).apply()

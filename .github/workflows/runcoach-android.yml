@@ -1,0 +1,48 @@
+name: RunCoach Android build
+
+on:
+  push:
+    paths:
+      - "runcoach/**"
+      - ".github/workflows/runcoach-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runcoach
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test and build APK
+        run: ./gradlew :core:test :app:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runcoach-apk
+          path: runcoach/app/build/outputs/apk/debug/app-debug.apk
+
+      # Publishes the APK at a fixed link you can open on your phone.
+      - name: Publish to the "runcoach-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: runcoach-latest
+          name: RunCoach (latest build)
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          files: runcoach/app/build/outputs/apk/debug/app-debug.apk
+          body: |
+            Latest RunCoach build from `${{ github.ref_name }}` (${{ github.sha }}).
+            On your Android phone, download app-debug.apk and open it to install.

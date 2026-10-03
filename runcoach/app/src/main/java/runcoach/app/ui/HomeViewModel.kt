@@ -19,6 +19,7 @@ data class UiState(
     val profile: RunnerProfile = RunnerProfile(40),
     val plan: IntervalPlan = IntervalPlan(180, 60, 7),
     val bpmTolerance: Int = 4,
+    val spotifyClientId: String = "",
     val report: String? = null,
     val playlistUrl: String? = null,
     val message: String? = null,
@@ -46,6 +47,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                     profile = store.profile,
                     plan = store.plan,
                     bpmTolerance = store.bpmTolerance,
+                    spotifyClientId = store.spotifyClientId,
                     report = store.lastReport,
                     playlistUrl = store.lastPlaylistUrl,
                 )
@@ -55,7 +57,8 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun finishSpotifyLogin(redirect: Uri) = work("Connected to Spotify.") { service.spotify.finishLogin(redirect) }
 
-    fun saveSettings(profile: RunnerProfile, plan: IntervalPlan, tolerance: Int) {
+    fun saveSettings(profile: RunnerProfile, plan: IntervalPlan, tolerance: Int, spotifyClientId: String) {
+        store.spotifyClientId = spotifyClientId
         store.profile = profile
         store.plan = plan
         store.bpmTolerance = tolerance

@@ -44,20 +44,23 @@ Garmin watch → Garmin Connect → Health Connect → RunCoach → Spotify play
 
 ## Setup
 
-1. **Garmin → Health Connect.** In the Garmin Connect app on your phone: *More → Settings →
+1. **Install the app.** Every push builds a new APK. On your Android phone, open
+   <https://github.com/adamrowe70-ship-it/Test/releases/tag/runcoach-latest> and tap
+   `app-debug.apk`. When Android asks, allow your browser to install unknown apps, then install.
+   If Play Protect warns about an unrecognised app, choose *Install anyway* (it's your own build).
+2. **Garmin → Health Connect.** In the Garmin Connect app on your phone: *More → Settings →
    Connected Apps → Health Connect*. Turn on sharing for activities, heart rate, steps and distance.
-2. **Spotify developer app.** At <https://developer.spotify.com/dashboard>, create an app with
+3. **Spotify developer app.** At <https://developer.spotify.com/dashboard>, create an app with
    the Web API and add the redirect URI `runcoach://callback`. Copy the Client ID.
    Spotify's Development Mode requires the app owner (you) to have Premium.
-3. **Build.** Open this `runcoach/` folder in Android Studio. Add this line to `local.properties`
-   (Android Studio creates the file):
-   ```
-   spotify.clientId=YOUR_CLIENT_ID
-   ```
-   Then run the app on your phone.
-4. **In the app:** connect Health Connect and Spotify. Enter your age, and your max HR if you
-   know it. Check the current session (it starts at 7 × 3 min / 1 min) and tap **Save**.
+4. **In RunCoach:** under Settings, enter your age, your max HR if you know it, and the Spotify
+   Client ID. Check the current session (it starts at 7 × 3 min / 1 min) and tap **Save**.
+   Then tap **Connect** for Health Connect (allow everything, including background access) and
+   for Spotify.
+5. **Go running.** Once Garmin has synced, RunCoach notices the run within 30 minutes and
+   notifies you with your next session and the playlist. You can also tap **Check latest run**.
 
+To build it yourself instead, open this folder in Android Studio and run the `app` configuration.
 Run the core tests without Android: `./gradlew :core:test`.
 
 ## Known limits

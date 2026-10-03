@@ -4,6 +4,15 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    // Versions live here; each module applies only the plugins it needs, so `:core`
+    // never has to download the Android Gradle plugin.
+    plugins {
+        kotlin("jvm") version "2.1.0"
+        kotlin("android") version "2.1.0"
+        kotlin("plugin.serialization") version "2.1.0"
+        kotlin("plugin.compose") version "2.1.0"
+        id("com.android.application") version "8.7.3"
+    }
 }
 dependencyResolutionManagement {
     repositories {

@@ -1,0 +1,236 @@
+<title>Day's End</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:wght@400;500&display=swap">
+<style>
+  /* Layout: one centered column. Prompt on top, the affirmation card appears below it. */
+  :root {
+    --bg: #eef2ef;
+    --surface: #ffffff;
+    --fg: #1b2827;
+    --muted: #5b6c6a;
+    --line: #cfdad6;
+    --accent: #2e6f68;
+    --accent-fg: #ffffff;
+    --glow: #d6ebe5;
+    --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+    --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1918; --surface: #172423; --fg: #e6efed; --muted: #92a6a3;
+      --line: #2b3f3d; --accent: #6fc2b6; --accent-fg: #0b1514; --glow: #1d3532;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1918; --surface: #172423; --fg: #e6efed; --muted: #92a6a3;
+    --line: #2b3f3d; --accent: #6fc2b6; --accent-fg: #0b1514; --glow: #1d3532;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    padding-block: 48px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  main { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 8px 0 0; }
+
+  form { display: flex; flex-direction: column; gap: 20px; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend, label.lbl {
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0; margin-bottom: 10px;
+  }
+  .moods { display: flex; flex-wrap: wrap; gap: 8px; }
+  .moods input { position: absolute; opacity: 0; pointer-events: none; }
+  .moods label {
+    border: 1.5px solid var(--line); background: var(--surface);
+    border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 500;
+    transition: border-color .15s, background .15s;
+  }
+  .moods label:hover { border-color: var(--accent); }
+  .moods input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .moods input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  textarea {
+    width: 100%; min-height: 130px; resize: vertical;
+    font: inherit; color: var(--fg); background: var(--surface);
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  }
+  textarea::placeholder { color: var(--muted); }
+  textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  button {
+    font: inherit; font-weight: 500; cursor: pointer; border-radius: 12px;
+    padding: 13px 22px; border: 1.5px solid var(--accent);
+    background: var(--accent); color: var(--accent-fg);
+  }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  button.ghost { background: transparent; color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .card {
+    background: var(--glow); border-radius: 20px; padding: 28px 24px;
+    display: flex; flex-direction: column; gap: 18px;
+    animation: rise .35s ease-out;
+  }
+  .card .tag { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .card blockquote {
+    margin: 0; font-family: var(--font-display); font-weight: 500;
+    font-size: clamp(1.4rem, 5.5vw, 1.9rem); line-height: 1.25; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } .moods label { transition: none; } }
+</style>
+
+<main>
+  <header>
+    <h1>How did your day go?</h1>
+    <p class="sub">Say it however it came out. You'll get something kind back.</p>
+  </header>
+
+  <form id="form">
+    <fieldset>
+      <legend>Overall, it was</legend>
+      <div class="moods" id="moods">
+        <input type="radio" name="mood" id="m-rough" value="rough"><label for="m-rough">Rough</label>
+        <input type="radio" name="mood" id="m-meh" value="meh"><label for="m-meh">Meh</label>
+        <input type="radio" name="mood" id="m-okay" value="okay"><label for="m-okay">Okay</label>
+        <input type="radio" name="mood" id="m-good" value="good"><label for="m-good">Good</label>
+        <input type="radio" name="mood" id="m-great" value="great"><label for="m-great">Great</label>
+      </div>
+    </fieldset>
+    <div>
+      <label class="lbl" for="story">What happened</label>
+      <textarea id="story" placeholder="Work was a lot, but I got a walk in at lunch..."></textarea>
+    </div>
+    <div class="actions">
+      <button type="submit">Get my affirmation</button>
+    </div>
+  </form>
+
+  <section id="result" class="card" hidden aria-live="polite">
+    <p class="tag" id="tag"></p>
+    <blockquote id="quote"></blockquote>
+    <div class="actions">
+      <button type="button" class="ghost" id="another">Another one</button>
+      <button type="button" class="ghost" id="copy">Copy</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const AFFIRMATIONS = {
+    rough: [
+      "You got through a hard day. That counts for more than you think.",
+      "Being tired is not the same as failing. You showed up anyway.",
+      "You don't have to fix everything tonight. Rest is allowed.",
+      "A difficult day does not cancel your worth. It stays exactly where it was.",
+      "You handled more today than anyone saw. Be gentle with yourself now.",
+      "Tomorrow gets a fresh start, and so do you."
+    ],
+    meh: [
+      "An ordinary day still moves your life forward a little.",
+      "Not every day needs to shine. Steady is a real strength.",
+      "You did what was in front of you. That is enough.",
+      "Quiet days build the base for the big ones.",
+      "You are allowed to feel flat and still be doing well."
+    ],
+    okay: [
+      "You kept things together today, and that takes real effort.",
+      "Small wins add up. You collected a few today.",
+      "You're making progress even on the days it doesn't feel like it.",
+      "Steady and capable, that's you.",
+      "You did your best with what the day gave you."
+    ],
+    good: [
+      "You earned this good day. Let yourself enjoy it.",
+      "Your effort is showing up in how things are going.",
+      "Notice what went well and keep it. You made it happen.",
+      "You bring good energy to the things you touch.",
+      "A good day suits you. There will be more."
+    ],
+    great: [
+      "What a day. You deserve every bit of it.",
+      "You are doing something right. Keep trusting yourself.",
+      "Celebrate this one. You put in the work to get here.",
+      "Your joy is contagious. Enjoy it fully tonight.",
+      "Days like this remind you what you're capable of."
+    ]
+  };
+  const TAGS = {
+    rough: "For a hard day", meh: "For a flat day", okay: "For a steady day",
+    good: "For a good day", great: "For a great day"
+  };
+
+  const NEG = /\b(awful|terrible|horrible|hard|rough|stress\w*|exhaust\w*|tired|sad|anxious|worried|angry|overwhelm\w*|bad|worst|crying|cried|lonely|failed|argu\w*|sick)\b/i;
+  const POS = /\b(great|amazing|wonderful|happy|love\w*|proud|fun|excited|won|success\w*|best|fantastic|good|nice|enjoy\w*|relax\w*)\b/i;
+
+  const form = document.getElementById("form");
+  const story = document.getElementById("story");
+  const result = document.getElementById("result");
+  const quoteEl = document.getElementById("quote");
+  const tagEl = document.getElementById("tag");
+  const copyBtn = document.getElementById("copy");
+
+  let currentMood = "okay";
+  let lastQuote = "";
+
+  function pickMood() {
+    const chosen = form.querySelector('input[name="mood"]:checked');
+    if (chosen) return chosen.value;
+    const text = story.value;
+    const neg = (text.match(new RegExp(NEG.source, "gi")) || []).length;
+    const pos = (text.match(new RegExp(POS.source, "gi")) || []).length;
+    if (neg > pos) return "rough";
+    if (pos > neg) return "good";
+    return "okay";
+  }
+
+  function show() {
+    const pool = AFFIRMATIONS[currentMood].filter(q => q !== lastQuote);
+    const q = pool[Math.floor(Math.random() * pool.length)];
+    lastQuote = q;
+    tagEl.textContent = TAGS[currentMood];
+    quoteEl.textContent = q;
+    result.hidden = false;
+    copyBtn.textContent = "Copy";
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    currentMood = pickMood();
+    show();
+    result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  document.getElementById("another").addEventListener("click", show);
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(quoteEl.textContent);
+      copyBtn.textContent = "Copied";
+    } catch (err) {
+      const r = document.createRange();
+      r.selectNodeContents(quoteEl);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      copyBtn.textContent = "Selected";
+    }
+  });
+</script>

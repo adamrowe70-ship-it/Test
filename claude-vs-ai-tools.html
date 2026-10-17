@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude vs. Other AI Tools — One-Page Overview</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --muted:#6b6358;
+    --paper:#f4f1ea;
+    --card:#fffdf8;
+    --line:#e3ddd0;
+    --accent:#c8643c;     /* terracotta */
+    --accent-soft:#f6e7df;
+    --good:#3f7d54;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1180px;margin:0 auto;padding:34px 40px 48px;}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;
+    border-bottom:3px solid var(--ink);padding-bottom:16px;margin-bottom:22px;gap:24px;}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:38px;line-height:1.05;font-weight:700;letter-spacing:-0.5px;}
+  h1 em{color:var(--accent);font-style:italic;}
+  .subtitle{color:var(--muted);font-size:14px;margin-top:8px;max-width:620px;}
+  .stamp{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap;}
+  .stamp b{display:block;color:var(--ink);font-size:13px;}
+
+  .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start;}
+
+  section h2{font-family:Georgia,serif;font-size:18px;margin-bottom:12px;
+    display:flex;align-items:center;gap:9px;}
+  section h2::before{content:"";width:10px;height:10px;background:var(--accent);
+    border-radius:2px;transform:rotate(45deg);display:inline-block;}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12.5px;}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--ink);color:var(--paper);font-weight:600;font-size:11px;
+    text-transform:uppercase;letter-spacing:.4px;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#faf7f0;}
+  .tool{font-weight:700;}
+  .tool small{display:block;font-weight:400;color:var(--muted);font-size:11px;}
+  .claude-row{background:var(--accent-soft)!important;}
+  .claude-row .tool{color:var(--accent);}
+
+  .cards{display:flex;flex-direction:column;gap:14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:10px;padding:14px 16px;}
+  .card h3{font-size:13.5px;margin-bottom:6px;}
+  .card p{font-size:12.5px;color:var(--muted);}
+
+  .models{margin-top:22px;}
+  .model-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .model{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;}
+  .model .name{font-weight:700;font-size:13px;}
+  .model .id{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:10.5px;color:var(--accent);
+    background:var(--accent-soft);padding:2px 6px;border-radius:5px;display:inline-block;margin:5px 0;}
+  .model .desc{font-size:11.5px;color:var(--muted);}
+
+  .why{margin-top:22px;background:var(--ink);color:var(--paper);border-radius:12px;padding:18px 22px;}
+  .why h2{color:var(--paper);}
+  .why h2::before{background:var(--accent);}
+  .why ul{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px 26px;margin-top:6px;}
+  .why li{font-size:12.5px;padding-left:20px;position:relative;color:#e8e2d6;}
+  .why li::before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700;}
+  .why li b{color:#fff;}
+
+  footer{margin-top:24px;border-top:1px solid var(--line);padding-top:12px;
+    font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;}
+
+  @media print{body{background:#fff;}.page{padding:0;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <h1>Claude <em>vs.</em> the Other AI Tools</h1>
+      <p class="subtitle">A one-page comparison of leading AI assistants for everyday work, coding, and agentic automation — and where Anthropic's Claude fits in.</p>
+    </div>
+    <div class="stamp">
+      <b>Prepared 19 June 2026</b>
+      Single-page briefing
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <section>
+      <h2>How the major assistants compare</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">Tool</th>
+            <th style="width:26%">Best at</th>
+            <th style="width:30%">Strengths</th>
+            <th style="width:24%">Watch-outs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="claude-row">
+            <td class="tool">Claude <small>Anthropic</small></td>
+            <td>Coding, long-horizon agents, careful reasoning &amp; writing</td>
+            <td>1M-token context, strong instruction-following, Claude Code &amp; Agent SDK, safety-first design</td>
+            <td>Smaller consumer ecosystem than Google/OpenAI</td>
+          </tr>
+          <tr>
+            <td class="tool">ChatGPT <small>OpenAI</small></td>
+            <td>General-purpose chat, broad consumer features</td>
+            <td>Huge user base, image gen, voice, large plugin/app ecosystem</td>
+            <td>Can be verbose; usage caps on top models</td>
+          </tr>
+          <tr>
+            <td class="tool">Gemini <small>Google</small></td>
+            <td>Multimodal, Google Workspace integration</td>
+            <td>Native Docs/Gmail/Search tie-in, very long context, strong on media</td>
+            <td>Output consistency varies by task</td>
+          </tr>
+          <tr>
+            <td class="tool">Copilot <small>Microsoft</small></td>
+            <td>Office 365 &amp; enterprise workflows</td>
+            <td>Deep Word/Excel/Teams integration; built on OpenAI models</td>
+            <td>Best value only inside the MS ecosystem</td>
+          </tr>
+          <tr>
+            <td class="tool">Llama <small>Meta (open)</small></td>
+            <td>Self-hosting, customization, on-prem control</td>
+            <td>Open weights, free to run, fine-tunable, no vendor lock-in</td>
+            <td>You own the infra, tuning &amp; safety work</td>
+          </tr>
+          <tr>
+            <td class="tool">Perplexity</td>
+            <td>Search &amp; cited research answers</td>
+            <td>Live web results with sources, fast Q&amp;A</td>
+            <td>Less suited to deep generation or coding</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="models">
+        <h2>The current Claude line-up</h2>
+        <div class="model-grid">
+          <div class="model">
+            <div class="name">Claude Fable 5</div>
+            <span class="id">claude-fable-5</span>
+            <div class="desc">Most capable model — hardest reasoning &amp; long autonomous work. 1M context.</div>
+          </div>
+          <div class="model">
+            <div class="name">Claude Opus 4.8</div>
+            <span class="id">claude-opus-4-8</span>
+            <div class="desc">Flagship workhorse — top-tier coding, agents &amp; knowledge work. 1M context.</div>
+          </div>
+          <div class="model">
+            <div class="name">Claude Sonnet 4.6</div>
+            <span class="id">claude-sonnet-4-6</span>
+            <div class="desc">Best speed-to-intelligence balance for high-volume production use.</div>
+          </div>
+          <div class="model">
+            <div class="name">Claude Haiku 4.5</div>
+            <span class="id">claude-haiku-4-5</span>
+            <div class="desc">Fastest &amp; most economical for simple, latency-sensitive tasks.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What sets Claude apart</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Built for agents &amp; code</h3>
+          <p>Claude Code (CLI, IDE &amp; web) and the Claude Agent SDK turn Claude into a tool-using teammate that can edit files, run commands and drive multi-step work.</p>
+        </div>
+        <div class="card">
+          <h3>Massive 1M-token context</h3>
+          <p>Read whole codebases, long documents or full chat histories in a single request — at standard pricing on the latest models.</p>
+        </div>
+        <div class="card">
+          <h3>Reliable instruction-following</h3>
+          <p>Recent Claude models follow prompts literally and precisely, with less "AI slop," making them predictable for pipelines and structured output.</p>
+        </div>
+        <div class="card">
+          <h3>Safety &amp; honesty by design</h3>
+          <p>Anthropic's research focus means strong guardrails, calibrated refusals and a model that pushes back rather than confidently inventing answers.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="why">
+    <h2>When to choose Claude</h2>
+    <ul>
+      <li><b>Software engineering</b> — agentic coding, refactors &amp; reviews across large repos.</li>
+      <li><b>Document-heavy work</b> — summarizing, extracting &amp; drafting over long inputs.</li>
+      <li><b>Autonomous agents</b> — long-horizon tasks via the API, tools &amp; Managed Agents.</li>
+      <li><b>Careful writing</b> — clear, warm prose with accurate, well-reasoned content.</li>
+      <li><b>High-stakes accuracy</b> — when calibrated, honest answers matter most.</li>
+      <li><b>Enterprise &amp; cloud</b> — available on AWS, Bedrock, Vertex AI &amp; Foundry.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <span>Comparison reflects general strengths of each tool; capabilities evolve quickly across all vendors.</span>
+    <span>Claude · Anthropic</span>
+  </footer>
+
+</div>
+</body>
+</html>

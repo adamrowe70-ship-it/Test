@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primordia — Live Evolution Sandbox</title>
+<style>
+  :root {
+    --bg: #0b1016; --panel: #121a24; --line: #1f2b3a; --text: #d7e2ee; --dim: #7f93a8;
+    --plant: #4ade80; --graze: #38bdf8; --hunt: #fb7185; --accent: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; }
+  header { padding: 14px 20px 6px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 20px; letter-spacing: .04em; }
+  header span { color: var(--dim); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; padding: 8px 20px 20px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  #world { width: 100%; display: block; border-radius: 8px; background: #08121a; cursor: crosshair; touch-action: none; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  button { background: #1b2736; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  button:hover { background: #243449; }
+  button.on { border-color: var(--accent); color: var(--accent); }
+  label { display: flex; flex-direction: column; font-size: 12px; color: var(--dim); gap: 2px; min-width: 120px; }
+  label b { color: var(--text); font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  h2 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); }
+  .side { display: flex; flex-direction: column; gap: 14px; }
+  canvas.chart { width: 100%; height: 150px; display: block; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  #log { max-height: 190px; overflow-y: auto; font-size: 13px; }
+  #log div { padding: 5px 0; border-bottom: 1px solid var(--line); }
+  #log div small { color: var(--dim); margin-right: 6px; }
+  #inspect { font-size: 13px; min-height: 92px; color: var(--dim); }
+  #inspect table { width: 100%; border-collapse: collapse; color: var(--text); }
+  #inspect td { padding: 1px 0; } #inspect td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
+  kbd { background: #1b2736; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>PRIMORDIA</h1>
+  <span>Nobody programs the behaviour. Mutation + hunger + predators do.</span>
+  <span id="stats"></span>
+</header>
+<main>
+  <section>
+    <div class="panel">
+      <canvas id="world" width="960" height="600"></canvas>
+      <div class="bar">
+        <button id="pause">Pause</button>
+        <button id="reset">New world</button>
+        <button id="rescue" class="on" title="If a species goes extinct, a few migrants arrive">Rescue: on</button>
+        <label>Sim speed <b id="vSpeed">1×</b><input id="speed" type="range" min="1" max="12" value="1"></label>
+        <label>Plant growth <b id="vFood">0.30</b><input id="food" type="range" min="0.05" max="1" step="0.05" value="0.3"></label>
+        <label>Mutation <b id="vMut">0.12</b><input id="mut" type="range" min="0" max="0.4" step="0.01" value="0.12"></label>
+      </div>
+      <div class="hint">Click a creature to inspect its genes · <kbd>click</kbd> empty space drops food · <kbd>shift</kbd>+click spawns a hunter · <kbd>alt</kbd>+click spawns a grazer · colour = speed gene (slow→fast)</div>
+    </div>
+  </section>
+  <aside class="side">
+    <div class="panel"><h2>Populations</h2><canvas id="popChart" class="chart"></canvas>
+      <div class="legend"><span><i style="background:var(--plant)"></i>plants</span><span><i style="background:var(--graze)"></i>grazers</span><span><i style="background:var(--hunt)"></i>hunters</span></div></div>
+    <div class="panel"><h2>Average genes (% of starting value)</h2><canvas id="geneChart" class="chart"></canvas>
+      <div class="legend"><span><i style="background:#38bdf8"></i>grazer speed</span><span><i style="background:#a78bfa"></i>grazer vision</span><span><i style="background:#fb7185"></i>hunter speed</span><span><i style="background:#fbbf24"></i>hunter vision</span></div></div>
+    <div class="panel"><h2>Selected creature</h2><div id="inspect">Click any creature.</div></div>
+    <div class="panel"><h2>Evolution log</h2><div id="log"><div><small>t=0</small>Life begins. Watch this space.</div></div></div>
+  </aside>
+</main>
+
+<script>
+(() => {
+'use strict';
+const W = 960, H = 600;
+const cv = document.getElementById('world'), ctx = cv.getContext('2d');
+const $ = id => document.getElementById(id);
+
+// ---- tunables -------------------------------------------------------------
+const P = { food: 0.30, mut: 0.12, speedMul: 1, rescue: true, paused: false };
+const START = { graze: { speed: 1.4, vision: 70 }, hunt: { speed: 1.6, vision: 90 } };
+const LIM = { speed: [0.4, 3.6], vision: [15, 220] };
+const PLANT_CAP = 320, GRAZE_CAP = 260, HUNT_CAP = 28;
+
+let plants, grazers, hunters, tick, nextId, selected, hist, geneHist, lastReport, extinctFlag, genStats;
+
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const gauss = () => (Math.random() + Math.random() + Math.random() + Math.random() - 2) * 0.9;
+const mutate = (v, lim) => clamp(v * (1 + gauss() * P.mut), lim[0], lim[1]);
+const dist2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+
+function spawn(kind, x, y, genes, energy, gen) {
+  return { id: nextId++, kind, x, y, a: rand(0, 6.283), energy, age: 0, gen: gen || 1,
+           speed: genes.speed, vision: genes.vision, kids: 0, cur: 0, rest: 0 };
+}
+function metabolism(c) {
+  // The central trade-off: speed is quadratic in cost, sight costs too.
+  const k = c.kind === 'hunt' ? 1.1 : 1;
+  return k * (0.035 + 0.016 * c.speed * c.speed + 0.00055 * c.vision);
+}
+
+function reset() {
+  plants = []; grazers = []; hunters = []; tick = 0; nextId = 1; selected = null;
+  hist = []; geneHist = []; lastReport = null; extinctFlag = { graze: false, hunt: false };
+  for (let i = 0; i < 160; i++) plants.push({ x: rand(10, W - 10), y: rand(10, H - 10) });
+  for (let i = 0; i < 70; i++) grazers.push(spawn('graze', rand(0, W), rand(0, H), mutateStart('graze'), rand(40, 80)));
+  for (let i = 0; i < 5; i++) hunters.push(spawn('hunt', rand(0, W), rand(0, H), mutateStart('hunt'), rand(80, 120)));
+  $('log').innerHTML = '<div><small>t=0</small>Life begins. Watch this space.</div>';
+  $('inspect').textContent = 'Click any creature.';
+}
+function mutateStart(k) { const s = START[k]; return { speed: mutate(s.speed, LIM.speed), vision: mutate(s.vision, LIM.vision) }; }
+
+function log(msg) {
+  const d = document.createElement('div');
+  d.innerHTML = `<small>t=${tick}</small>${msg}`;
+  $('log').prepend(d);
+  while ($('log').children.length > 40) $('log').lastChild.remove();
+}
+
+// ---- simulation -----------------------------------------------------------
+function steer(c, tx, ty, spd) {
+  const want = Math.atan2(ty - c.y, tx - c.x);
+  let d = want - c.a; d = Math.atan2(Math.sin(d), Math.cos(d));
+  c.a += clamp(d, -0.35, 0.35);
+  move(c, spd);
+}
+function wander(c, spd) { c.a += rand(-0.25, 0.25); move(c, spd); }
+function move(c, spd) {
+  c.cur = spd;
+  c.x += Math.cos(c.a) * spd; c.y += Math.sin(c.a) * spd;
+  if (c.x < 4) { c.x = 4; c.a = Math.PI - c.a; } else if (c.x > W - 4) { c.x = W - 4; c.a = Math.PI - c.a; }
+  if (c.y < 4) { c.y = 4; c.a = -c.a; } else if (c.y > H - 4) { c.y = H - 4; c.a = -c.a; }
+  c.energy -= metabolism(c) * (spd / Math.max(c.speed, 0.01)) ** 2 * 0.6 + 0.0 ; // moving at full speed costs full price
+}
+
+function stepGrazer(g) {
+  let threat = null, td = g.vision ** 2;
+  for (const h of hunters) { const d = dist2(g, h); if (d < td) { td = d; threat = h; } }
+  if (threat) { // flee at full speed
+    steer(g, g.x - (threat.x - g.x), g.y - (threat.y - g.y), g.speed);
+  } else {
+    let best = null, bd = g.vision ** 2;
+    for (const p of plants) { const d = dist2(g, p); if (d < bd) { bd = d; best = p; } }
+    if (best) {
+      steer(g, best.x, best.y, g.speed * 0.8);
+      if (bd < 36) { plants.splice(plants.indexOf(best), 1); g.energy += 32; }
+    } else wander(g, g.speed * 0.5);
+  }
+  g.energy -= metabolism(g) * 0.45; // resting cost
+}
+function stepHunter(h) {
+  let prey = null, pd = h.vision ** 2;
+  for (const g of grazers) { const d = dist2(h, g); if (d < pd) { pd = d; prey = g; } }
+  if (prey) {
+    if (h.rest > 0) { h.rest--; wander(h, h.speed * 0.3); }   // digesting after a kill
+    else {
+      steer(h, prey.x, prey.y, h.speed);
+      if (pd < 49) { prey.dead = true; h.energy += 45 + prey.energy * 0.4; h.rest = 60; }
+    }
+  } else wander(h, h.speed * 0.45);
+  h.energy -= metabolism(h) * 0.45;
+}
+
+function reproduce(list, cap, thresh, kind) {
+  const born = [];
+  for (const c of list) {
+    if (c.energy > thresh && list.length + born.length < cap) {
+      c.energy *= 0.5; c.kids++;
+      const child = spawn(kind, c.x, c.y, { speed: mutate(c.speed, LIM.speed), vision: mutate(c.vision, LIM.vision) }, c.energy, c.gen + 1);
+      born.push(child);
+    }
+  }
+  return born;
+}
+
+function step() {
+  tick++;
+  if (Math.random() < P.food && plants.length < PLANT_CAP) plants.push({ x: rand(8, W - 8), y: rand(8, H - 8) });
+  for (const g of grazers) { g.age++; stepGrazer(g); }
+  for (const h of hunters) { h.age++; stepHunter(h); }
+  grazers = grazers.filter(g => !g.dead && g.energy > 0 && g.age < 4000);
+  hunters = hunters.filter(h => h.energy > 0 && h.age < 6000);
+  grazers.push(...reproduce(grazers, GRAZE_CAP, 85, 'graze'));
+  hunters.push(...reproduce(hunters, HUNT_CAP, 165, 'hunt'));
+  if (selected && !(grazers.includes(selected) || hunters.includes(selected))) {
+    log(`Selected ${selected.kind === 'hunt' ? 'hunter' : 'grazer'} #${selected.id} died after ${selected.age} ticks with ${selected.kids} offspring.`);
+    selected = null; $('inspect').textContent = 'It died. Click another.';
+  }
+  rescueCheck();
+  if (tick % 20 === 0) sample();
+  if (tick % 700 === 0) narrate();
+}
+
+const mean = (a, k) => a.length ? a.reduce((s, c) => s + c[k], 0) / a.length : NaN;
+function sample() {
+  hist.push([plants.length, grazers.length, hunters.length]);
+  const gs = mean(grazers, 'speed'), gv = mean(grazers, 'vision'), hs = mean(hunters, 'speed'), hv = mean(hunters, 'vision');
+  geneHist.push([gs / START.graze.speed, gv / START.graze.vision, hs / START.hunt.speed, hv / START.hunt.vision]);
+  if (hist.length > 500) { hist.shift(); geneHist.shift(); }
+}
+
+function rescueCheck() {
+  for (const [key, list, arr, kind] of [['graze', grazers, 'graze', 'graze'], ['hunt', hunters, 'hunt', 'hunt']]) {
+    if (list.length === 0 && !extinctFlag[key]) {
+      extinctFlag[key] = true;
+      log(`☠ ${kind === 'hunt' ? 'Hunters' : 'Grazers'} went <b>extinct</b>.${P.rescue ? ' Migrants will arrive.' : ''}`);
+    }
+    if (list.length === 0 && P.rescue && tick % 300 === 0) {
+      const n = kind === 'hunt' ? 3 : 25;
+      const target = kind === 'hunt' ? hunters : grazers;
+      for (let i = 0; i < n; i++) target.push(spawn(kind, rand(0, W), rand(0, H), mutateStart(kind), kind === 'hunt' ? 110 : 60));
+      extinctFlag[key] = false; log(`${n} ${kind === 'hunt' ? 'hunter' : 'grazer'} migrants arrive.`);
+    }
+    if (list.length > 0) extinctFlag[key] = false;
+  }
+}
+
+// Plain-English commentary on what selection is doing right now.
+function narrate() {
+  if (geneHist.length < 40) return;
+  const now = geneHist.slice(-5), then = geneHist.slice(-40, -35);
+  const avg = (rows, i) => rows.reduce((s, r) => s + r[i], 0) / rows.length;
+  const labels = ['grazer speed', 'grazer vision', 'hunter speed', 'hunter vision'];
+  let best = null;
+  for (let i = 0; i < 4; i++) {
+    const a = avg(now, i), b = avg(then, i);
+    if (isNaN(a) || isNaN(b)) continue;
+    const ch = (a - b) / b;
+    if (!best || Math.abs(ch) > Math.abs(best.ch)) best = { i, ch, a };
+  }
+  if (best && Math.abs(best.ch) > 0.06) {
+    const up = best.ch > 0, g = best.i < 2;
+    const why = best.i === 0 ? (up ? 'Hunters are culling the slow.' : 'Speed is too expensive — thrifty grazers are winning.')
+      : best.i === 1 ? (up ? 'Seeing predators early pays off.' : 'Sharp eyes are a luxury right now.')
+      : best.i === 2 ? (up ? 'An arms race: prey got faster, so hunters must too.' : 'Prey is slow; cheap, lazy hunters thrive.')
+      : (up ? 'Hunters are scouting wider for scarce prey.' : 'Prey is dense — no need to look far.');
+    log(`<b>${labels[best.i]}</b> ${up ? '▲' : '▼'} ${Math.abs(best.ch * 100).toFixed(0)}% recently (now ${(best.a * 100).toFixed(0)}% of start). ${why}`);
+  }
+  const gmax = grazers.reduce((m, c) => Math.max(m, c.gen), 0), hmax = hunters.reduce((m, c) => Math.max(m, c.gen), 0);
+  if (tick % 2800 === 0) log(`Deepest lineages: grazers gen ${gmax}, hunters gen ${hmax}.`);
+}
+
+// ---- rendering ------------------------------------------------------------
+function speedColor(c) {
+  const t = clamp((c.speed - LIM.speed[0]) / (LIM.speed[1] - LIM.speed[0]), 0, 1);
+  return c.kind === 'graze' ? `hsl(${200 - t * 140}, 90%, ${55 + t * 5}%)` : `hsl(${350 - t * 30}, 85%, ${45 + t * 20}%)`;
+}
+function draw() {
+  ctx.fillStyle = '#08121a'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#4ade80';
+  for (const p of plants) { ctx.globalAlpha = 0.85; ctx.fillRect(p.x - 2, p.y - 2, 4, 4); }
+  ctx.globalAlpha = 1;
+  for (const g of grazers) blob(g, 4.5);
+  for (const h of hunters) blob(h, 7);
+  if (selected) {
+    ctx.strokeStyle = 'rgba(251,191,36,.7)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(selected.x, selected.y, selected.vision, 0, 6.283); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(selected.x, selected.y, 12, 0, 6.283); ctx.stroke();
+  }
+}
+function blob(c, r) {
+  ctx.fillStyle = speedColor(c);
+  ctx.beginPath();
+  if (c.kind === 'hunt') { // triangle
+    const ca = Math.cos(c.a), sa = Math.sin(c.a);
+    ctx.moveTo(c.x + ca * r * 1.5, c.y + sa * r * 1.5);
+    ctx.lineTo(c.x - ca * r + sa * r * .8, c.y - sa * r - ca * r * .8);
+    ctx.lineTo(c.x - ca * r - sa * r * .8, c.y - sa * r + ca * r * .8);
+  } else ctx.arc(c.x, c.y, r, 0, 6.283);
+  ctx.fill();
+}
+
+function line(g, rows, idx, color, lo, hi, w, h) {
+  g.strokeStyle = color; g.lineWidth = 1.6; g.beginPath(); let started = false;
+  rows.forEach((r, i) => {
+    const v = r[idx]; if (isNaN(v)) { started = false; return; }
+    const x = (i / 499) * w, y = h - 6 - ((clamp(v, lo, hi) - lo) / (hi - lo)) * (h - 12);
+    if (!started) { g.moveTo(x, y); started = true; } else g.lineTo(x, y);
+  });
+  g.stroke();
+}
+function charts() {
+  for (const [id, rows, defs, lo, hi, base] of [
+    ['popChart', hist, [[0, '#4ade80'], [1, '#38bdf8'], [2, '#fb7185']], 0, Math.max(60, ...hist.map(r => Math.max(r[0], r[1], r[2]))), false],
+    ['geneChart', geneHist, [[0, '#38bdf8'], [1, '#a78bfa'], [2, '#fb7185'], [3, '#fbbf24']], 0.4, Math.max(1.8, ...geneHist.flat().filter(v => !isNaN(v))), true]]) {
+    const c = $(id), g = c.getContext('2d'), dpr = devicePixelRatio || 1;
+    const w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== w * dpr) { c.width = w * dpr; c.height = h * dpr; }
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    g.strokeStyle = '#1f2b3a'; g.lineWidth = 1;
+    for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(0, (h / 4) * i); g.lineTo(w, (h / 4) * i); g.stroke(); }
+    if (base) { const y = h - 6 - ((1 - lo) / (hi - lo)) * (h - 12); g.setLineDash([3, 3]); g.strokeStyle = '#3b4c61'; g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); g.setLineDash([]); }
+    for (const [i, col] of defs) line(g, rows, i, col, lo, hi, w, h);
+    g.fillStyle = '#7f93a8'; g.font = '10px system-ui'; g.fillText(base ? hi.toFixed(1) + '×' : String(Math.round(hi)), 3, 11);
+  }
+}
+
+function updateStats() {
+  $('stats').textContent = `t=${tick} · ${plants.length} plants · ${grazers.length} grazers · ${hunters.length} hunters`;
+  if (selected) {
+    const s = selected;
+    $('inspect').innerHTML = `<b style="color:var(--text)">${s.kind === 'hunt' ? 'Hunter' : 'Grazer'} #${s.id}</b>
+      <table><tr><td>Generation</td><td>${s.gen}</td></tr>
+      <tr><td>Speed gene</td><td>${s.speed.toFixed(2)} (start ${START[s.kind].speed})</td></tr>
+      <tr><td>Vision gene</td><td>${s.vision.toFixed(0)} (start ${START[s.kind].vision})</td></tr>
+      <tr><td>Energy</td><td>${s.energy.toFixed(0)}</td></tr>
+      <tr><td>Age / offspring</td><td>${s.age} / ${s.kids}</td></tr>
+      <tr><td>Upkeep per tick</td><td>${metabolism(s).toFixed(3)}</td></tr></table>`;
+  }
+}
+
+// ---- interaction ----------------------------------------------------------
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+  if (e.shiftKey) { hunters.push(spawn('hunt', x, y, mutateStart('hunt'), 120)); return; }
+  if (e.altKey) { grazers.push(spawn('graze', x, y, mutateStart('graze'), 70)); return; }
+  let best = null, bd = 18 ** 2;
+  for (const c of [...grazers, ...hunters]) { const d = dist2(c, { x, y }); if (d < bd) { bd = d; best = c; } }
+  if (best) { selected = best; updateStats(); }
+  else for (let i = 0; i < 8; i++) plants.push({ x: clamp(x + rand(-25, 25), 5, W - 5), y: clamp(y + rand(-25, 25), 5, H - 5) });
+});
+$('pause').onclick = () => { P.paused = !P.paused; $('pause').textContent = P.paused ? 'Resume' : 'Pause'; };
+$('reset').onclick = reset;
+$('rescue').onclick = () => { P.rescue = !P.rescue; $('rescue').className = P.rescue ? 'on' : ''; $('rescue').textContent = 'Rescue: ' + (P.rescue ? 'on' : 'off'); };
+$('speed').oninput = e => { P.speedMul = +e.target.value; $('vSpeed').textContent = P.speedMul + '×'; };
+$('food').oninput = e => { P.food = +e.target.value; $('vFood').textContent = P.food.toFixed(2); };
+$('mut').oninput = e => { P.mut = +e.target.value; $('vMut').textContent = P.mut.toFixed(2); };
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); $('pause').click(); } });
+
+function frame() {
+  if (!P.paused) for (let i = 0; i < P.speedMul; i++) step();
+  draw(); charts(); updateStats();
+  requestAnimationFrame(frame);
+}
+window.__primordia = { step: n => { for (let i = 0; i < n; i++) step(); }, counts: () => [plants.length, grazers.length, hunters.length, tick],
+  genes: () => [mean(grazers, 'speed'), mean(grazers, 'vision'), mean(hunters, 'speed'), mean(hunters, 'vision')] };
+reset(); frame();
+})();
+</script>
+</body>
+</html>

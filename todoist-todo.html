@@ -1,0 +1,308 @@
+<title>Todoist Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: wide-radius poster header (giant date numeral + progress ring), gradient capture bar, then rounded task cards grouped by day. */
+:root{
+  --bg:#f4f3ff; --surface:#ffffff; --ink:#14123a; --muted:#65628f; --line:#e4e2fb;
+  --cobalt:#2b3cff; --coral:#ff4f6d; --sun:#ffc928; --mint:#12cf9b; --violet:#8a4dff;
+  --on-bright:#ffffff; --on-sun:#14123a;
+  --shadow:0 1px 0 rgba(20,18,58,.04),0 8px 24px -8px rgba(43,60,255,.18),0 24px 48px -24px rgba(20,18,58,.18);
+  --grad:linear-gradient(120deg,#2b3cff 0%,#8a4dff 55%,#ff4f6d 100%);
+  --font-display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --font-body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:"DM Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0b24; --surface:#171540; --ink:#f3f2ff; --muted:#9d9ac9; --line:#2a2766;
+  --cobalt:#5b6bff; --coral:#ff6b86; --sun:#ffd54a; --mint:#2be8b5; --violet:#a778ff;
+  --shadow:0 1px 0 rgba(255,255,255,.04),0 12px 32px -12px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c0b24; --surface:#171540; --ink:#f3f2ff; --muted:#9d9ac9; --line:#2a2766;
+  --cobalt:#5b6bff; --coral:#ff6b86; --sun:#ffd54a; --mint:#2be8b5; --violet:#a778ff;
+  --shadow:0 1px 0 rgba(255,255,255,.04),0 12px 32px -12px rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+.hero{position:relative;overflow:hidden;border-radius:28px;background:var(--grad);color:#fff;padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:12px 20px;align-items:end;box-shadow:var(--shadow)}
+.hero::before{content:"";position:absolute;right:-60px;top:-80px;width:240px;height:240px;border-radius:50%;background:var(--sun);opacity:.9;mix-blend-mode:normal;filter:blur(0)}
+.hero::after{content:"";position:absolute;left:38%;bottom:-70px;width:160px;height:160px;border-radius:50%;background:var(--mint);opacity:.85}
+.hero>*{position:relative;z-index:1}
+.eyebrow{font:500 12px var(--font-data);letter-spacing:.14em;text-transform:uppercase;opacity:.9}
+.day{font:800 clamp(72px,22vw,132px)/.82 var(--font-display);letter-spacing:-.05em;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.sub{font:500 18px var(--font-display);margin-top:8px}
+.ring{width:96px;height:96px;position:relative;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.ring .tr{stroke:rgba(255,255,255,.28)}
+.ring .pr{stroke:#fff;transition:stroke-dashoffset .6s cubic-bezier(.2,.9,.3,1)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font:800 22px/1 var(--font-display)}
+.ring b small{display:block;font:500 10px var(--font-data);letter-spacing:.08em;opacity:.9;margin-top:2px}
+.stamp{grid-column:1/-1;font:11px var(--font-data);opacity:.85}
+
+form.add{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:6px;border:2px solid transparent;
+  background-image:linear-gradient(var(--surface),var(--surface)),var(--grad);background-origin:border-box;background-clip:padding-box,border-box;
+  display:grid;grid-template-columns:1fr auto;gap:6px}
+form.add input[type=text]{border:0;background:transparent;color:var(--ink);font:500 17px var(--font-body);padding:14px 14px;outline:none;min-width:0}
+form.add input::placeholder{color:var(--muted)}
+.btn{background:var(--cobalt);color:var(--on-bright);border:0;border-radius:16px;padding:0 24px;font:700 15px var(--font-body);min-height:48px;transition:transform .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px)}.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:default}
+.opts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;padding:0 8px 8px;min-width:0}
+.opts select,.opts input{font:500 13px var(--font-body);color:var(--ink);background:var(--bg);border:0;border-radius:999px;padding:9px 14px;min-width:0;max-width:100%}
+
+nav.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px}
+nav.tabs button{border:0;background:var(--surface);color:var(--muted);border-radius:999px;padding:10px 18px;font-weight:700;white-space:nowrap;box-shadow:var(--shadow);transition:background .2s,color .2s}
+nav.tabs button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+
+.group{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.group h2{display:flex;align-items:center;gap:10px;font:800 20px var(--font-display);letter-spacing:-.01em;margin:6px 0 0}
+.group h2 span.n{font:500 12px var(--font-data);background:var(--sun);color:var(--on-sun);border-radius:999px;padding:3px 9px}
+.group h2.late{color:var(--coral)}.group h2.late span.n{background:var(--coral);color:#fff}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+li{position:relative;display:grid;grid-template-columns:auto 1fr;gap:14px;padding:16px 16px 16px 14px;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);align-items:start;transition:opacity .3s,transform .3s}
+li:hover{transform:translateY(-1px)}
+li.done{opacity:.4}li.done .t{text-decoration:line-through}
+.chk{width:30px;height:30px;border-radius:50%;border:3px solid var(--c,var(--muted));background:transparent;padding:0;display:grid;place-items:center;transition:background .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
+.chk:hover{background:color-mix(in srgb,var(--c,var(--muted)) 22%,transparent);transform:scale(1.08)}
+li.done .chk{background:var(--c,var(--muted))}
+li.done .chk::after{content:"";width:8px;height:14px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.chk.p1{--c:var(--coral)}.chk.p2{--c:var(--sun)}.chk.p3{--c:var(--cobalt)}.chk.p4{--c:var(--muted)}
+.body{min-width:0}
+.t{font:500 17px/1.3 var(--font-body);overflow-wrap:anywhere}
+.desc{font-size:13px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font:500 11px var(--font-data)}
+.meta span{border-radius:999px;padding:4px 10px;background:var(--bg);color:var(--muted)}
+.meta .due{background:var(--cobalt);color:#fff}
+.meta .due.late{background:var(--coral)}
+.meta .pj{color:#fff;background:var(--pj,var(--violet))}
+.meta .pj.sun{color:var(--on-sun)}
+
+.state{background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:36px 20px;text-align:center;color:var(--muted)}
+.state strong{display:block;font:800 24px var(--font-display);color:var(--ink);margin-bottom:6px}
+.state .btn{margin-top:16px}
+.snack{position:fixed;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;pointer-events:none}
+.snack>div{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:18px;padding:14px 18px;display:flex;gap:16px;align-items:center;max-width:720px;width:100%;justify-content:space-between;font-weight:500;box-shadow:0 20px 40px -12px rgba(20,18,58,.5)}
+.snack button{background:var(--sun);color:var(--on-sun);border:0;border-radius:999px;padding:8px 16px;font-weight:700}
+.pop{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:50;animation:pop .7s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes pop{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.pop{display:none}}
+@media (max-width:480px){.hero{padding:18px}.ring{width:80px;height:80px}.btn{padding:0 18px}}
+</style>
+
+<main>
+  <section class="hero" aria-label="Summary">
+    <div>
+      <div class="eyebrow" id="weekday"></div>
+      <div class="day" id="day"></div>
+      <div class="sub" id="month"></div>
+    </div>
+    <div class="ring" role="img" aria-label="Progress" id="ringBox">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="tr" cx="50" cy="50" r="42"/><circle class="pr" id="ringArc" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/></svg>
+      <b><span id="ringTxt">0</span></b>
+    </div>
+    <div class="stamp" id="stamp" aria-live="polite">Connecting to Todoist…</div>
+  </section>
+
+  <form class="add" id="addForm" autocomplete="off">
+    <input type="text" id="newContent" placeholder="What needs doing?" aria-label="New task" required>
+    <button class="btn" id="addBtn" type="submit">Add task</button>
+    <div class="opts">
+      <select id="newProject" aria-label="Project"><option value="inbox">Inbox</option></select>
+      <input type="text" id="newDue" placeholder="Due: tomorrow 9am" aria-label="Due date" size="18">
+      <select id="newPri" aria-label="Priority">
+        <option value="p4">No priority</option><option value="p1">P1 urgent</option><option value="p2">P2 high</option><option value="p3">P3 medium</option>
+      </select>
+    </div>
+  </form>
+
+  <nav class="tabs" role="tablist" aria-label="View">
+    <button role="tab" data-view="today" aria-selected="true">Today</button>
+    <button role="tab" data-view="week" aria-selected="false">Next 7 days</button>
+    <button role="tab" data-view="all" aria-selected="false">All open</button>
+  </nav>
+
+  <section id="list" aria-live="polite"><div class="state"><strong>Hang on</strong>Connecting to Todoist…</div></section>
+</main>
+<div class="snack" id="snack" hidden><div><span id="snackMsg"></span><button id="snackBtn" type="button">Undo</button></div></div>
+
+<script>
+(function(){
+  var SERVER = "Todoist";
+  var VIEWS = {
+    today: {filter:"today | overdue", empty:"Nothing due today. Add a task above or look at the next 7 days."},
+    week:  {filter:"7 days | overdue", empty:"Nothing due in the next 7 days."},
+    all:   {filter:"all", empty:"No open tasks."}
+  };
+  var BRIGHTS = ["var(--cobalt)","var(--coral)","var(--mint)","var(--violet)","var(--sun)"];
+  var $ = function(id){return document.getElementById(id)};
+  var mcp=null, view="today", unwatch=null, tasks=[], projects={}, doneIds={}, finished=0, snackTimer=null;
+
+  function esc(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML}
+  function todayStr(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+  function code(e){return e&&e.code||"upstream_error"}
+  function hash(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)}
+
+  var now=new Date();
+  $("weekday").textContent=now.toLocaleDateString(undefined,{weekday:"long"});
+  $("day").textContent=now.getDate();
+  $("month").textContent=now.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+
+  function ring(){
+    var left=tasks.filter(function(t){return !doneIds[t.id]}).length, total=left+finished;
+    var frac=total?finished/total:0;
+    $("ringArc").setAttribute("stroke-dashoffset",(263.9*(1-frac)).toFixed(1));
+    $("ringTxt").innerHTML=left+'<small>LEFT</small>';
+    $("ringBox").setAttribute("aria-label",left+" tasks left, "+finished+" finished this visit");
+  }
+
+  function errorState(e){
+    var c=code(e), title, msg, retry=true;
+    if(c==="server_not_connected"||c==="selection_required"){title="Todoist is not connected";msg="Add Todoist in claude.ai Settings → Connectors, then reload this page.";retry=false}
+    else if(c==="needs_reauth"){title="Sign in to Todoist again";msg="Reconnect Todoist in claude.ai Settings → Connectors, then reload this page.";retry=false}
+    else if(c==="not_in_manifest"||c==="approval_required"||c==="consent_required"){title="Todoist is switched off for this page";msg="Allow Todoist from this page's Permissions menu, then try again."}
+    else if(c==="blocked_by_policy"){title="Your organization blocks this Todoist tool";msg="Ask an admin to allow it.";retry=false}
+    else if(c==="server_unavailable"){title="Todoist did not answer";msg="This is usually brief. Try again in a moment."}
+    else{title="Could not load your tasks";msg=(e&&e.message)||"Try again."}
+    $("list").innerHTML='<div class="state"><strong>'+esc(title)+'</strong>'+esc(msg)+(retry?'<br><button class="btn" id="retry" type="button">Try again</button>':'')+'</div>';
+    var r=$("retry"); if(r) r.onclick=function(){start()};
+  }
+
+  function dueInfo(t){
+    if(!t.dueDate) return null;
+    var date=t.dueDate.slice(0,10), time=t.dueDate.length>10?t.dueDate.slice(11,16):"", today=todayStr();
+    var d=new Date(date+"T00:00:00"), diff=Math.round((d-new Date(today+"T00:00:00"))/864e5), label;
+    if(diff===0)label="Today";else if(diff===1)label="Tomorrow";else if(diff===-1)label="Yesterday";
+    else label=d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+    var full=label+(time&&time!=="00:00"?" "+time:"");
+    return {date:date,label:label,full:full,late:date<today,diff:diff};
+  }
+
+  function render(){
+    var late=[], byDate={}, nodate=[], groups=[];
+    tasks.forEach(function(t){
+      var di=dueInfo(t);
+      if(!di)nodate.push(t);else if(di.late)late.push(t);else(byDate[di.date]=byDate[di.date]||[]).push(t);
+    });
+    function byTime(a,b){return (a.dueDate||"").localeCompare(b.dueDate||"")}
+    late.sort(byTime);
+    if(late.length)groups.push({title:"Overdue",cls:"late",items:late});
+    Object.keys(byDate).sort().forEach(function(d){groups.push({title:dueInfo(byDate[d][0]).label,items:byDate[d].sort(byTime)})});
+    if(nodate.length)groups.push({title:"No date",items:nodate});
+    ring();
+    if(!groups.length){$("list").innerHTML='<div class="state"><strong>All clear</strong>'+esc(VIEWS[view].empty)+'</div>';return}
+    $("list").innerHTML=groups.map(function(g){
+      return '<div class="group"><h2 class="'+(g.cls||"")+'">'+esc(g.title)+'<span class="n">'+g.items.length+'</span></h2><ul>'+g.items.map(function(t){
+        var di=dueInfo(t), pr=t.priority||"p4", pj=projects[t.projectId], meta=[];
+        if(di)meta.push('<span class="due'+(di.late?' late':'')+'">'+esc(di.full)+'</span>');
+        if(pj){var ci=hash(t.projectId)%BRIGHTS.length;meta.push('<span class="pj'+(ci===4?' sun':'')+'" style="--pj:'+BRIGHTS[ci]+'">'+esc(pj)+'</span>')}
+        if(t.recurring)meta.push('<span>↻ '+esc(typeof t.recurring==="string"?t.recurring:"repeats")+'</span>');
+        if(t.duration)meta.push('<span>'+esc(t.duration)+'</span>');
+        (t.labels||[]).forEach(function(l){meta.push('<span>@'+esc(l)+'</span>')});
+        return '<li data-id="'+esc(t.id)+'"'+(doneIds[t.id]?' class="done"':'')+'><button class="chk '+esc(pr)+'" type="button" aria-label="Complete: '+esc(t.content)+'"></button><div class="body"><div class="t">'+esc(t.content)+'</div>'+(t.description?'<div class="desc">'+esc(t.description)+'</div>':'')+(meta.length?'<div class="meta">'+meta.join("")+'</div>':'')+'</div></li>';
+      }).join("")+'</ul></div>';
+    }).join("");
+  }
+
+  function start(){
+    if(unwatch){unwatch();unwatch=null}
+    $("list").innerHTML='<div class="state"><strong>Loading</strong>Fetching your tasks…</div>';
+    unwatch=mcp.watchTool(SERVER,"find-tasks",{filter:VIEWS[view].filter,limit:100},function(ev){
+      if(ev.type==="error"){
+        var c=code(ev.error);
+        if(tasks.length&&(c==="server_unavailable"||c==="upstream_error"||c==="rate_limited")){$("stamp").textContent="Showing the last loaded list. Todoist is not answering.";return}
+        tasks=[];$("stamp").textContent="Not connected";errorState(ev.error);return;
+      }
+      var p=ev.result.payload;
+      tasks=(p&&p.tasks)||[];
+      Object.keys(doneIds).forEach(function(id){if(!tasks.some(function(t){return t.id===id}))delete doneIds[id]});
+      var at=ev.result.cache?ev.result.cache.storedAt:Date.now();
+      $("stamp").textContent="Synced with Todoist at "+new Date(at).toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+      render();
+    },{refetchInterval:60000});
+  }
+
+  function refresh(){return mcp.invalidate(SERVER,"find-tasks").catch(function(){})}
+
+  function snack(msg,undo){
+    $("snackMsg").textContent=msg;$("snack").hidden=false;
+    $("snackBtn").hidden=!undo;$("snackBtn").onclick=undo||null;
+    clearTimeout(snackTimer);snackTimer=setTimeout(function(){$("snack").hidden=true},6000);
+  }
+
+  function burst(el){
+    if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    var r=el.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, cols=["#2b3cff","#ff4f6d","#ffc928","#12cf9b","#8a4dff"];
+    for(var i=0;i<14;i++){
+      var s=document.createElement("i");s.className="pop";
+      var a=Math.PI*2*i/14, d=34+Math.random()*34;
+      s.style.cssText="left:"+cx+"px;top:"+cy+"px;background:"+cols[i%5]+";--x:"+Math.cos(a)*d+"px;--y:"+Math.sin(a)*d+"px;--r:"+(Math.random()*360)+"deg";
+      document.body.appendChild(s);setTimeout(function(n){n.remove()},800,s);
+    }
+  }
+
+  $("list").addEventListener("click",function(e){
+    var b=e.target.closest(".chk");if(!b)return;
+    var li=b.closest("li"), id=li.getAttribute("data-id");
+    if(doneIds[id])return;
+    doneIds[id]=true;finished++;li.classList.add("done");burst(b);ring();
+    mcp.callTool(SERVER,"complete-tasks",{ids:[id]}).then(function(){
+      var t=tasks.filter(function(x){return x.id===id})[0];
+      snack("Done"+(t?": "+t.content.slice(0,40):""),function(){
+        $("snack").hidden=true;
+        mcp.callTool(SERVER,"uncomplete-tasks",{ids:[id]}).then(function(){delete doneIds[id];finished=Math.max(0,finished-1);refresh()}).catch(function(){snack("Could not reopen that task.")});
+      });
+      refresh();
+    }).catch(function(err){
+      delete doneIds[id];finished=Math.max(0,finished-1);li.classList.remove("done");ring();
+      snack(code(err)==="approval_required"||code(err)==="not_in_manifest"?"Todoist needs your approval to change tasks.":"Could not complete that task. Check Todoist and try again.");
+    });
+  });
+
+  $("addForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var content=$("newContent").value.trim();if(!content||!mcp)return;
+    var task={content:content,projectId:$("newProject").value};
+    var due=$("newDue").value.trim();if(due)task.dueString=due;
+    if($("newPri").value!=="p4")task.priority=$("newPri").value;
+    $("addBtn").disabled=true;
+    mcp.callTool(SERVER,"add-tasks",{tasks:[task]}).then(function(){
+      $("newContent").value="";$("newDue").value="";$("newPri").value="p4";
+      snack("Added to Todoist");return refresh();
+    }).catch(function(err){
+      snack(code(err)==="tool_error"?"Todoist rejected that task. Check the due date wording.":"Could not add the task. Try again.");
+    }).then(function(){$("addBtn").disabled=false});
+  });
+
+  document.querySelector(".tabs").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-view]");if(!b||b.dataset.view===view)return;
+    view=b.dataset.view;tasks=[];
+    document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-selected",x===b?"true":"false")});
+    start();
+  });
+
+  function loadProjects(){
+    mcp.callTool(SERVER,"find-projects",{limit:200}).then(function(r){
+      var list=(r.payload&&r.payload.projects)||[], sel=$("newProject"), inbox=null;
+      sel.innerHTML="";
+      list.forEach(function(p){
+        projects[p.id]=p.name;
+        var o=document.createElement("option");
+        o.value=p.inboxProject?"inbox":p.id;o.textContent=p.name;
+        if(p.inboxProject)inbox=o;else sel.appendChild(o);
+      });
+      if(inbox)sel.insertBefore(inbox,sel.firstChild);
+      sel.selectedIndex=0;render();
+    }).catch(function(){});
+  }
+
+  claude.use("mcp").then(function(m){
+    if(!m){$("stamp").textContent="Not connected";$("list").innerHTML='<div class="state"><strong>Open in claude.ai</strong>Sign in to claude.ai and open this page there to see your Todoist tasks.</div>';$("addBtn").disabled=true;return}
+    mcp=m;loadProjects();start();
+  });
+})();
+</script>

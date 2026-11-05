@@ -61,15 +61,6 @@ form.add input[type=text]{border:0;background:transparent;color:var(--ink);font:
 .opts select,.opts input,.edit select,.edit input,.edit textarea{font:500 14px var(--font-body);color:var(--ink);background:var(--bg);border:2px solid transparent;border-radius:12px;padding:9px 12px;min-width:0;max-width:100%}
 .opts select,.opts input{border-radius:999px;font-size:13px;padding:9px 14px}
 
-.spot{position:relative;overflow:hidden;border-radius:24px;padding:18px 20px;background:var(--sun);color:var(--on-sun);box-shadow:var(--shadow);display:grid;gap:8px}
-.spot .lab{font:500 11px var(--font-data);letter-spacing:.14em;text-transform:uppercase}
-.spot .big{font:800 clamp(34px,10vw,56px)/.95 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.spot .big small{font-size:.4em;letter-spacing:0;margin-left:6px}
-.spot .name{font:700 18px/1.3 var(--font-body);overflow-wrap:anywhere}
-.spot .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.spot .btn{background:var(--ink);color:var(--bg)}
-.spot .btn.ghost{background:rgba(20,18,58,.12);color:var(--on-sun)}
-
 .done{display:grid;gap:10px}
 .done h2,.group h2{display:flex;align-items:center;gap:10px;font:800 20px var(--font-display);letter-spacing:-.01em;margin:0}
 .badge{font:500 12px var(--font-data);background:var(--sun);color:var(--on-sun);border-radius:999px;padding:3px 9px}
@@ -163,8 +154,6 @@ li.fin .chk::after{content:"";width:8px;height:14px;border:solid #fff;border-wid
     </div>
   </form>
 
-  <section class="spot" id="spot" hidden aria-label="Longest open task"></section>
-
   <section class="done" id="doneBox" hidden aria-label="Done today">
     <h2>Done today <span class="badge" id="doneN">0</span></h2>
     <div class="strip" id="strip"></div>
@@ -255,20 +244,6 @@ li.fin .chk::after{content:"";width:8px;height:14px;border:solid #fff;border-wid
       return '<button class="dchip" type="button" data-reopen="'+esc(t.id)+'" title="Tap to reopen"><b>'+esc(t.content)+'</b><span>'+esc(timeOf(t.completedAt))+(projects[t.projectId]?" · "+esc(projects[t.projectId]):"")+'</span></button>';
     }).join("");
   }
-  function oldestTask(){
-    var best=null;
-    allOpen.forEach(function(t){if(!finished[t.id]&&t.addedAt&&(!best||t.addedAt<best.addedAt))best=t});
-    return best;
-  }
-  function renderSpot(){
-    var t=oldestTask();
-    if(!t||ageDays(t)<7){$("spot").hidden=true;return}
-    var d=ageDays(t);
-    $("spot").hidden=false;
-    $("spot").setAttribute("data-id",t.id);
-    $("spot").innerHTML='<div class="lab">Open the longest</div><div class="big">'+d+'<small>days</small></div><div class="name">'+esc(t.content)+'</div>'+
-      '<div class="acts"><button class="btn sm" data-spot="done" type="button">Mark done</button><button class="btn sm ghost" data-spot="today" type="button">Do it today</button><button class="btn sm ghost" data-spot="tomorrow" type="button">Tomorrow</button></div>';
-  }
   function chips(t){
     var di=dueInfo(t), meta=[], pj=projects[t.projectId], d=ageDays(t);
     if(di)meta.push('<span class="due'+(di.late?" late":"")+'">'+esc(di.full)+'</span>');
@@ -285,7 +260,7 @@ li.fin .chk::after{content:"";width:8px;height:14px;border:solid #fff;border-wid
       '<button class="ed" type="button" data-edit="1" aria-label="Edit: '+esc(t.content)+'">Edit</button></li>';
   }
   function render(){
-    renderHero();renderDone();renderSpot();
+    renderHero();renderDone();
     if(editingId)return;
     var list=visible(), groups=[];
     if(view==="oldest"){
@@ -500,14 +475,6 @@ li.fin .chk::after{content:"";width:8px;height:14px;border:solid #fff;border-wid
     mcp.callTool(S,"uncomplete-tasks",{ids:[id]}).then(function(){snack("Reopened");return afterWrite()})
       .catch(function(err){snack(failMsg(err,"reopen that task"))});
   });
-  $("spot").addEventListener("click",function(e){
-    var b=e.target.closest("[data-spot]");if(!b)return;
-    var id=$("spot").getAttribute("data-id"),a=b.getAttribute("data-spot");
-    if(a==="done")complete(id,b);
-    else if(a==="today")reschedule(id,todayStr(),"Moved to today");
-    else reschedule(id,addDays(1),"Moved to tomorrow");
-  });
-
   $("addForm").addEventListener("submit",function(e){
     e.preventDefault();
     var content=$("newContent").value.trim();if(!content||!mcp)return;
